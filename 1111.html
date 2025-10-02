@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Mini App Tg2 - Веб</title>
+</head>
+<body>
+
+<h1>Mini App Tg2 - Веб</h1>
+<p>Баланс: <span id="balance">0</span> монет</p>
+
+<div id="adPlaceholder">
+  <button id="watchAdBtn">Смотреть рекламу (+1 монета)</button>
+  <p>Здесь будет блок реальной рекламы</p>
+</div>
+
+<h2>Магазин</h2>
+<ul id="shop"></ul>
+
+<h2>Вывод монет</h2>
+<button id="withdrawBtn" onclick="openModal('withdraw')">Вывести монеты</button>
+
+<!-- Модальное окно -->
+<div id="modal" style="display:none;">
+  <h3 id="modalTitle"></h3>
+  <input type="text" id="modalInput">
+  <button id="modalConfirm">Подтвердить</button>
+  <button id="modalCancel">Отмена</button>
+</div>
+
+<script>
+  // JS-код внутри <script>
+  let balance = 0;
+  const balanceEl = document.getElementById("balance");
+  const shopEl = document.getElementById("shop");
+
+  const shopItems = [
+    { id: 1, name: "Товар 1", price: 10 },
+    { id: 2, name: "Товар 2", price: 20 },
+    { id: 3, name: "Товар 3", price: 15 }
+  ];
+
+  shopItems.forEach(item => {
+    const li = document.createElement("li");
+    li.innerHTML = `${item.name} — ${item.price} монет <button onclick="openModal('buy', ${item.id})">Купить</button>`;
+    shopEl.appendChild(li);
+  });
+
+  // Кнопка реклама
+  document.getElementById("watchAdBtn").onclick = () => {
+    alert("Реклама показана! +1 монета");
+    balance += 1;
+    balanceEl.innerText = balance;
+  };
+
+  const modal = document.getElementById("modal");
+  const modalTitle = document.getElementById("modalTitle");
+  const modalInput = document.getElementById("modalInput");
+  let currentAction = null;
+  let currentItem = null;
+
+  function openModal(action, itemId = null) {
+    currentAction = action;
+    currentItem = shopItems.find(i => i.id === itemId) || null;
+    modal.style.display = "block";
+    if(action === "buy") {
+      modalTitle.innerText = `Покупка: ${currentItem.name}`;
+      modalInput.value = "";
+      modalInput.placeholder = "Введите данные для покупки";
+      modalInput.type = "text";
+    } else if(action === "withdraw") {
+      modalTitle.innerText = "Вывод монет";
+      modalInput.value = "";
+      modalInput.placeholder = "Сколько монет вывести";
+      modalInput.type = "number";
+    }
+  }
+  window.openModal = openModal; // глобально для onclick
+
+  document.getElementById("modalConfirm").onclick = () => {
+    if(currentAction === "buy") {
+      if(balance >= currentItem.price) {
+        balance -= currentItem.price;
+        balanceEl.innerText = balance;
+        alert(`Вы купили ${currentItem.name}!`);
+      } else alert("Недостаточно монет!");
+    } else if(currentAction === "withdraw") {
+      const amount = parseInt(modalInput.value);
+      if(!isNaN(amount) && amount > 0 && amount <= balance) {
+        balance -= amount;
+        balanceEl.innerText = balance;
+        alert(`Вывод ${amount} монет успешен!`);
+      } else alert("Некорректная сумма или недостаточно монет");
+    }
+    modal.style.display = "none";
+  };
+  document.getElementById("modalCancel").onclick = () => { modal.style.display = "none"; };
+</script>
+
+</body>
+</html>
